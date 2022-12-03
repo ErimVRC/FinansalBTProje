@@ -1,3 +1,5 @@
+import {StyleSheet} from 'react-native';
+
 export const GlobalStyles = {
     colors: {
       primary50: '#e4d9fd',
@@ -15,4 +17,31 @@ export const GlobalStyles = {
     },
   };
 
+export const styles = StyleSheet.create({
+  main: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   
+  containerL: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+  },
+  containerC: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  containerR: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+});

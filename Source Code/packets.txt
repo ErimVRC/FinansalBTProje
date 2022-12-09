@@ -1,0 +1,12 @@
+You need the install these packets if you want to running program
+
+npm install @react-navigation/native
+
+npm install @react-navigation/native-stack
+
+npm install @react-navigation/bottom-tabs
+
+npm install axios
+
+npx expo install expo-linear-gradient
+

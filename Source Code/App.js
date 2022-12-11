@@ -57,7 +57,7 @@ function BulEkranlari(){
     <BottomTabs.Screen 
       name="DogumlariGetirEkrani"
       component={FindBirthsScreen}
-      options={{title: 'Find Birthdays'}}
+      options={{title: 'Find Births'}}
     />
     <BottomTabs.Screen 
       name="OlumleriGetirEkrani"

@@ -1,6 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { StyleSheet, Text, View, FlatList,Image } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import AppLoading from 'expo-app-loading';
 
 import FindEventsScreen from './screens/FindEventsScreen';
 import FindBirthsScreen from './screens/FindBirthsScreen';
@@ -9,11 +13,16 @@ import EventsScreen from './screens/EventsScreen';
 import BirthsScreen from './screens/BirthsScreen';
 import DeathsScreen from './screens/DeathsScreen';
 
+import LoginScreen from './screens/LoginScreen';
+import SignUpScreen from './screens/SignUpScreen';
+
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { GlobalStyles } from './components/constants/styles';
 
+import AuthContexProvider, { AuthContext } from './store/auth-context';
+import HistoryScreen from './screens/HistoryScreen';
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -40,7 +49,6 @@ function BulEkranlari(){
             <Image 
               style={styles.bottomTabImage}
               source={{
-                //uri: 'https://iconarchive.com/download/i31640/sykonist/popular-sites/Wikipedia.ico'
                 uri: 'https://cdn-icons-png.flaticon.com/512/5968/5968992.png'
                 
               }}
@@ -57,7 +65,7 @@ function BulEkranlari(){
     <BottomTabs.Screen 
       name="DogumlariGetirEkrani"
       component={FindBirthsScreen}
-      options={{title: 'Find Births'}}
+      options={{title: 'Find Birthdays'}}
     />
     <BottomTabs.Screen 
       name="OlumleriGetirEkrani"
@@ -68,13 +76,35 @@ function BulEkranlari(){
   );
 }
 
-export default function App() {
+function GirisKayitEkranlari(){
 
-  return (
-    <NavigationContainer>
-     <Stack.Navigator
+  return(
+    <Stack.Navigator
       screenOptions={{headerShown: false, headerBackVisible:true}}
-     >
+    > 
+      <Stack.Screen 
+        name="GirisEkrani"
+        component={LoginScreen}
+      />
+      <Stack.Screen 
+        name="KayitEkrani"
+        component={SignUpScreen}
+      />
+    </Stack.Navigator>
+  );
+  
+ 
+}
+
+function UygulamaEkranlari(){
+
+  return(
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        headerBackVisible:true
+      }}
+    > 
       <Stack.Screen 
         name="BulEkranlari"
         component={BulEkranlari}
@@ -91,15 +121,69 @@ export default function App() {
         name="OlumlerEkrani"
         component={DeathsScreen}
       />
-     </Stack.Navigator>
-    </NavigationContainer>
-    
+      <Stack.Screen 
+        name="GecmisAralamarEkrani"
+        component={HistoryScreen}
+      />
+    </Stack.Navigator>
   );
+  
+}
+
+function Navigation() {
+
+  const authContext = useContext(AuthContext);
+
+  return (
+    <NavigationContainer>
+      {!authContext.isAuthenticated && <GirisKayitEkranlari />}
+      {authContext.isAuthenticated && <UygulamaEkranlari />}
+    </NavigationContainer>
+  );
+}
+
+function Root(){
+
+  const [isTryingLogin , setIsTraingLogin] = useState(true);
+
+  const authContext = useContext(AuthContext);
+
+  useEffect(() => {
+    async function fetchToken(){
+        const storedToken = await AsyncStorage.getItem('token');
+        
+        if(storedToken){
+          authContext.authenticate(storedToken);
+        }
+        setIsTraingLogin(false);
+    }
+    fetchToken();
+    
+  },[]);
+
+  if(isTryingLogin){
+    return <AppLoading />
+  }
+
+  return <Navigation />;
+}
+
+export default function App() {
+
+  return (
+    <AuthContexProvider>
+      <StatusBar
+        style='auto'
+      />
+      <Root />
+    </AuthContexProvider>
+  );
+  
 }
 
 const styles = StyleSheet.create({
     bottomTabImage:{
         height: 30,
         width: 30
-    }
+    },
 });

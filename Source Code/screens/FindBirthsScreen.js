@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { StyleSheet, View, Image, Text, TextInput, Alert } from "react-native";
 import { GlobalStyles } from "../components/constants/styles";
 
 import { LinearGradient } from "expo-linear-gradient";
 
 import Button from "../components/UI/Button";
+import ExitButton from "../components/UI/ExitButton";
+
+import { AuthContext } from "../store/auth-context";
+
+import { getHistory, saveHistory } from "../util/request";
+import CircleButton from "../components/UI/CircleButton";
 
 function FindBirthsScreen({navigation}){
     
@@ -14,75 +20,20 @@ function FindBirthsScreen({navigation}){
     const [gunHata,setGunHata] = useState(1);
     const [ayHata,setAyHata] = useState(1);
 
-    const [ayrikAy,setAyrikAy] = useState(0);
-    const [subat,setSubat] = useState(0);
+    const authCtx = useContext(AuthContext);
 
     function saveDay(day){
         setDay(day);
-        if(!day.startsWith(0)){
-            // Şubat ayı(max 29 gün)
-            if(month == 2){
-                if(day>0 && day<=29){
-                    setGunHata(0);
-                }
-                else{
-                    setGunHata(1);    
-                }
-            }
-            // 30 günlük aylar
-            else if(month == 4 || month == 6 || month == 9 || month == 11){
-                if(day>0 && day<=30){
-                    setGunHata(0);
-                }
-                else{
-                    setGunHata(1);    
-                }   
-            }
-            // Geri kalan aylar(31 gün)
-            else{
-                if(day>0 && day<=31){
-                    setGunHata(0);  
-                }
-                else{
-                    setGunHata(1);    
-                } 
-            }
+        if(day>0 && day<=31){
+            setGunHata(0);  
         }
-        else {
-            setGunHata(1);
-        }  
+        else{
+            setGunHata(1);    
+        }
     }
-
     function saveMonth(month){
         setMonth(month);
-        if(month>0 && month<=12 && !month.startsWith(0)){
-            // Şubat ayı(max 29 gün)
-            if(month == 2){
-                if(day>0 && day<=29 && !day.startsWith(0)){
-                    setGunHata(0);
-                }
-                else{
-                    setGunHata(1);    
-                }
-            }
-            // 30 günlük aylar
-            else if(month == 4 || month == 6 || month == 9 || month == 11){
-                if(day>0 && day<=30 && !day.startsWith(0)){
-                    setGunHata(0);
-                }
-                else{
-                    setGunHata(1);    
-                }   
-            }
-            // Geri kalan aylar(31 gün)
-            else{
-                if(day>0 && day<=31 && !day.startsWith(0)){
-                    setGunHata(0);  
-                }
-                else{
-                    setGunHata(1);    
-                } 
-            }
+        if(month>0 && month<=12){
             setAyHata(0);
         }
         else{
@@ -92,28 +43,42 @@ function FindBirthsScreen({navigation}){
 
     function searchBirths(){
         if(gunHata == 0 && ayHata == 0){
+            saveHistory(authCtx.token,day,month,'birth');
             navigation.navigate('DogumlarEkrani',{day: day, month: month});
             setDay(null);
             setMonth(null);
+            setGunHata(1);
+            setAyHata(1);
         }
         else{
             Alert.alert(
                 "Wrong Input",
-                "Please check the day and month value.\nThe day and month value can't start with 0.\nThe day represented with a value between 1 and 31.\nThe month represented with a value between 1 and 12.\n1,3,5,7,8,10 and 12. months are lasts 31 days.\n4,6,9 and 11. months are lasts 30 days while 2. month lasts max 29 days.",
+                "Please check the day and month value",
                 [
                     { text: "OK", onPress: () => {} }
                 ]
             );
-            setDay(null);
-            setMonth(null);
         }
     }
-    
+    function searchHistory(){
+        navigation.navigate('GecmisAralamarEkrani');
+    }
+
     return(
+
         <LinearGradient 
             style={styles.mainContainer}
             colors={['#d2f8fff2','#9df2ff','#93d9f8','#4db7f5']}
-        >
+        >   
+            <View style={styles.exitContainer}>
+                <ExitButton 
+                    size={30}
+                    icon="exit-outline"
+                    color={GlobalStyles.colors.dark}
+                    onPress={authCtx.logout}
+                />   
+            </View>
+           
             <Text style={styles.text}>Wikipedia Find Births</Text>
             <Image
                 style={styles.image}
@@ -126,7 +91,7 @@ function FindBirthsScreen({navigation}){
                     style={styles.input}
                     keyboardType={"number-pad"}
                     maxLength={2}
-                    placeholder={"Day"}
+                    placeholder={"Day (1-31)"}
                     placeholderTextColor={GlobalStyles.colors.dark}
                     textAlign={'center'}
                     value={day}
@@ -136,7 +101,7 @@ function FindBirthsScreen({navigation}){
                     style={styles.input}
                     keyboardType={"number-pad"}
                     maxLength={2}
-                    placeholder={"Month"}
+                    placeholder={"Month (1-12)"}
                     placeholderTextColor={GlobalStyles.colors.dark}
                     textAlign={'center'}
                     value={month}
@@ -154,8 +119,12 @@ export default FindBirthsScreen;
 const styles = StyleSheet.create({
     mainContainer:{
         flex: 1,
-        padding: 40,
         alignItems: 'center'
+    },
+    exitContainer:{
+        alignItems: 'center',
+        marginTop: 15,
+        alignSelf: 'flex-end'
     },
     image:{
         height: 300,
@@ -163,7 +132,7 @@ const styles = StyleSheet.create({
     },
     text:{
         textAlign: 'center',
-        marginTop: 20,
+        padding: 10,
         fontSize: 25,
         fontWeight: '450',
         letterSpacing: 3,
@@ -171,19 +140,20 @@ const styles = StyleSheet.create({
         fontFamily: 'serif'
     },
     inputContainer:{
-        flexDirection: 'row'
+        flexDirection: 'row',
+        padding: 10
     },
     input:{
         height: 40,
         width: '50%',
-        margin: 12,
+        margin: 4,
         borderWidth: 1,
-        padding: 10,
+        padding: 4,
         borderRadius: 5,
         borderWidth: 2,
         borderColor: GlobalStyles.colors.dark,
         color: GlobalStyles.colors.dark,
         fontSize: 17,
-        marginBottom: 30
+        marginBottom: 14
     }
 });

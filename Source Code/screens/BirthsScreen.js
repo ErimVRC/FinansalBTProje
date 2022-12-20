@@ -53,46 +53,46 @@ function BirthsScreen({navigation,route}){
                   color={GlobalStyles.colors.dark} 
                   size={40}
                   onPress={geriDon} 
-                />
-              </View>
-          <FlatList
-            data={births}
-            keyExtractor={births.year}
-            renderItem={(data)=>{
-            //console.log(data);
-            return(
-              <View style={styles.listContainer}>
-                <View style={styles.yilContainer}>
-                  <Text style={styles.yilText}>Year {data.item.year}</Text>
+            />
+            </View>
+            <FlatList
+              data={births}
+              keyExtractor={births.year}
+              renderItem={(data)=>{
+              //console.log(data);
+              return(
+                <View style={styles.listContainer}>
+                  <View style={styles.yilContainer}>
+                    <Text style={styles.yilText}>Year {data.item.year}</Text>
+                  </View>
+                  <View style={styles.descriptionContainer}>
+                    <Text style={styles.descriptionText}>{data.item.description}</Text>
+                  </View>
+                  {data.item.wikipedia.map(item => {
+                    return(
+                      <View key={item.title} style={styles.wikipedia}> 
+                        <Text style={styles.titleText}>{item.title}</Text>
+                        <View style={styles.link}>
+                        <Image 
+                          style={styles.image}
+                          source={{
+                            uri: 'https://iconarchive.com/download/i31640/sykonist/popular-sites/Wikipedia.ico'
+                          }}
+                        />
+                        <Text  
+                          onPress={()=>Linking.openURL(item.wikipedia)}
+                          style={styles.linkText}
+                        >
+                          {item.wikipedia}
+                        </Text>
+                        </View>
+                      </View>                        
+                      );
+                  })}
                 </View>
-                <View style={styles.descriptionContainer}>
-                  <Text style={styles.descriptionText}>{data.item.description}</Text>
-                </View>
-                {data.item.wikipedia.map(item => {
-                  return(
-                    <View key={item.title} style={styles.wikipedia}> 
-                       <Text style={styles.titleText}>{item.title}</Text>
-                       <View style={styles.link}>
-                      <Image 
-                        style={styles.image}
-                        source={{
-                          uri: 'https://iconarchive.com/download/i31640/sykonist/popular-sites/Wikipedia.ico'
-                        }}
-                      />
-                      <Text  
-                        onPress={()=>Linking.openURL(item.wikipedia)}
-                        style={styles.linkText}
-                      >
-                        {item.wikipedia}
-                      </Text>
-                      </View>
-                     </View>                        
-                    );
-                })}
-              </View>
-            )
-          }}
-        />
+              )
+            }}
+          />
       </LinearGradient>
       );
 }
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     borderTopColor:GlobalStyles.colors.dark,
     borderRadius: 60,
     padding: 10,
-    marginRight: 50
+    marginRight:50
   },
   yilContainer:{
     flex: 1,

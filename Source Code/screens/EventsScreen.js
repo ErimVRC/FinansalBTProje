@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         borderTopColor:GlobalStyles.colors.dark,
         borderRadius: 60,
         padding: 10,
-        marginRight: 50
+        marginRight:50
       },
       yilContainer:{
         flex: 1,

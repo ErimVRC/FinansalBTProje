@@ -2,7 +2,7 @@ import { StyleSheet , View , Text , Pressable } from 'react-native';
 
 import { GlobalStyles } from '../constants/styles';
 
-function Button({ children , onPress , mode }){
+function Button({ children , onPress , mode, }){
 
     return(
         <View style={styles.container}> 
@@ -21,7 +21,7 @@ export default Button;
 const styles = StyleSheet.create({
 
     container:{
-        height: 60,
+        height: 40,
         width: '40%',
         margin: 12,
     },

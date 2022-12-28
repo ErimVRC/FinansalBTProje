@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { getDeaths } from '../util/request';
 import LoadingOverlay from '../components/UI/LoadingOverlay';
-import { GlobalStyles } from '../components/constants/styles';
+import { GlobalStyles } from '../constants/styles';
 import IconButton from "../components/UI/IconButton";
 
 

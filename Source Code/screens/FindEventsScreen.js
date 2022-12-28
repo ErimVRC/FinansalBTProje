@@ -1,15 +1,21 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { StyleSheet, View, Image, Text, TextInput, Alert } from "react-native";
-import { GlobalStyles } from "../components/constants/styles";
+
+import { GlobalStyles } from "../constants/styles";
 
 import { LinearGradient } from "expo-linear-gradient";
 
 import Button from "../components/UI/Button";
 import ExitButton from "../components/UI/ExitButton";
+import HistoryButton from "../components/UI/HistoryButton";
 
 import { AuthContext } from "../store/auth-context";
-import { saveHistory } from "../util/request";
 
+import LoadingOverlay from "../components/UI/LoadingOverlay";
+import { UserSearchHistoryContext } from "../store/user-search-history-context";
+
+import { collection, query, where, getDocs, arrayRemove,addDoc, Timestamp } from "firebase/firestore";
+import { getDbObject } from "../firebase/FireBaseObjects";
 
 function FindEventsScreen({navigation}){
 
@@ -18,21 +24,105 @@ function FindEventsScreen({navigation}){
 
     const [gunHata,setGunHata] = useState(1);
     const [ayHata,setAyHata] = useState(1);
+
+    const [gecmisGetirildiMi , setGecmisGetirildiMi ] = useState(true); 
+
+    const [kayitEdildiMi , setKayitEdildiMi ] = useState(true);
     
     const authCtx = useContext(AuthContext);
+
+    const historyCtx = useContext(UserSearchHistoryContext);
+
+    const db = getDbObject();
+
+    useEffect(() => {
+        async function getUserSearchHistory(){
+            if(historyCtx.SearchHistory.length>0){
+            }
+            else{
+                    setGecmisGetirildiMi(false);
+                try {   
+                    const q = query(collection(db, "usersearchhistory"),where("userId", "==", authCtx.token));
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach((doc)=>{
+                        historyCtx.addUserSearchHistory(doc.data());
+                    });
+                } catch (error) {
+                    Alert.alert('Besinleriniz getirilemedi lütfen internet bağlantınızı kontrol ediniz');
+                }
+                setGecmisGetirildiMi(true); 
+            }
+            
+        }
+        getUserSearchHistory();
+    },[]);
     
     function saveDay(day){
         setDay(day);
-        if(day>0 && day<=31){
-            setGunHata(0);  
+        if(!day.startsWith(0)){
+            // Şubat ayı(max 29 gün)
+            if(month == 2){
+                if(day>0 && day<=29){
+                    setGunHata(0);
+                }
+                else{
+                    setGunHata(1);    
+                }
+            }
+            // 30 günlük aylar
+            else if(month == 4 || month == 6 || month == 9 || month == 11){
+                if(day>0 && day<=30){
+                    setGunHata(0);
+                }
+                else{
+                    setGunHata(1);    
+                }   
+            }
+            // Geri kalan aylar(31 gün)
+            else{
+                if(day>0 && day<=31){
+                    setGunHata(0);  
+                }
+                else{
+                    setGunHata(1);    
+                } 
+            }
         }
-        else{
-            setGunHata(1);    
-        }
+        else {
+            setGunHata(1);
+        }  
     }
+
     function saveMonth(month){
         setMonth(month);
-        if(month>0 && month<=12){
+        if(month>0 && month<=12 && !month.startsWith(0)){
+            // Şubat ayı(max 29 gün)
+            if(month == 2){
+                if(day>0 && day<=29 && !day.startsWith(0)){
+                    setGunHata(0);
+                }
+                else{
+                    setGunHata(1);    
+                }
+            }
+            // 30 günlük aylar
+            else if(month == 4 || month == 6 || month == 9 || month == 11){
+                if(day>0 && day<=30 && !day.startsWith(0)){
+                    setGunHata(0);
+                }
+                else{
+                    setGunHata(1);    
+                }   
+            }
+            // Geri kalan aylar(31 gün)
+            else{
+                if(day>0 && day<=31 && !day.startsWith(0)){
+                    setGunHata(0);  
+                }
+                else{
+                    setGunHata(1);    
+                } 
+            }
             setAyHata(0);
         }
         else{
@@ -40,10 +130,39 @@ function FindEventsScreen({navigation}){
         }
     }
 
-    function searchEvents(){
+    function goSearchHistoryScreen(){
+        navigation.navigate('GecmisAralamarEkrani');
+    }
+
+    async function searchEvents(){
         
         if(gunHata == 0 && ayHata == 0){
-            saveHistory(authCtx.token,day,month,'event');
+
+            setKayitEdildiMi(false); 
+            try {
+                const db = getDbObject();
+                const docRef = await addDoc(collection(db, "usersearchhistory"), {
+                    userId: authCtx.token,
+                    gun: day,
+                    ay: month,
+                    aramaTuru: 'Events',
+                    eklemeTarihi: Timestamp.fromDate(new Date())
+                  });
+
+                historyCtx.addUserSearchHistory({
+                    userId: authCtx.token,
+                    gun: day,
+                    ay: month,
+                    aramaTuru: 'Events',
+                    eklemeTarihi: Timestamp.fromDate(new Date())
+                });
+
+                setKayitEdildiMi(true); 
+            } catch (error) {
+                Alert.alert(error.toString());
+                setKayitEdildiMi(true); 
+            }
+           
             navigation.navigate('OlaylarEkrani',{day: day, month: month});
             setDay(null);
             setMonth(null);
@@ -53,13 +172,25 @@ function FindEventsScreen({navigation}){
         else{
             Alert.alert(
                 "Wrong Input",
-                "Please check the day and month value",
+                "Please check the day and month value.\nThe day and month value can't start with 0.\nThe day represented with a value between 1 and 31.\nThe month represented with a value between 1 and 12.\n1,3,5,7,8,10 and 12. months are lasts 31 days.\n4,6,9 and 11. months are lasts 30 days while 2. month lasts max 29 days.",
                 [
                     { text: "OK", onPress: () => {} }
                 ]
             );
         }
     }
+
+    function uygulamadanCik(){
+        historyCtx.SearchHistory= [];
+        authCtx.logout();
+    }
+
+    if(!kayitEdildiMi || !gecmisGetirildiMi){
+        return(
+          <LoadingOverlay/>
+        );
+    }
+    
     
     return(
         <LinearGradient 
@@ -68,10 +199,16 @@ function FindEventsScreen({navigation}){
         >
             <View style={styles.exitContainer}>
                 <ExitButton 
-                    size={30}
+                    size={33}
                     icon="exit-outline"
                     color={GlobalStyles.colors.dark}
-                    onPress={authCtx.logout}
+                    onPress={uygulamadanCik}
+                />
+                <HistoryButton
+                     size={26}
+                     icon="history"
+                     color={GlobalStyles.colors.dark}
+                     onPress={goSearchHistoryScreen}
                 />  
             </View>
             <Text style={styles.text}>Wikipedia Find Events</Text>
@@ -117,8 +254,9 @@ const styles = StyleSheet.create({
     },
     exitContainer:{
         alignItems: 'center',
-        marginTop: 15,
-        alignSelf: 'flex-end'
+        marginTop: 30,
+        alignSelf: 'flex-end',
+        flexDirection: 'row-reverse'
     },
     image:{
         height: 300,

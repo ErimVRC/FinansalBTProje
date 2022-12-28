@@ -2,18 +2,19 @@ import { useState } from "react";
 
 import { StyleSheet, View, Text, Image, TextInput, Alert } from "react-native";
 
-import { GlobalStyles } from "../components/constants/styles";
+import { GlobalStyles } from "../constants/styles";
 
 import { Octicons, Ionicons } from '@expo/vector-icons'; 
 
 import Button from "../components/UI/Button";
 import IconButton from "../components/UI/IconButton";
 
-import { createUser } from "../util/request";
 
 import LoadingOverlay from '../components/UI/LoadingOverlay';
 
 import { LinearGradient } from "expo-linear-gradient";
+
+import { kayitOl } from "../firebase/auth";
 
 
 function SingUpScreen({navigation}){
@@ -37,7 +38,7 @@ function SingUpScreen({navigation}){
     async function signUp(){
         setKayitOlduMu(true);
         try {
-            await createUser(email,password);
+            await kayitOl(email,password);
             navigation.navigate('GirisEkrani',{email: email, password: password});
         } catch (error) {
             console.log(error);
@@ -59,8 +60,8 @@ function SingUpScreen({navigation}){
 
     return(
         <LinearGradient 
-            style={styles.mainContaineR}
-            colors={['#dadadaff','#ccd1d2','#8f9293','#626465']}
+            style={styles.mainContainer}
+            colors={['#f69595ff','#f38282ff','#f76969ff','#f55959ff']}
          >
             <View style={styles.backButtonContainer}>
                 <IconButton 
@@ -81,7 +82,7 @@ function SingUpScreen({navigation}){
                 <TextInput 
                         style={styles.input}
                         keyboardType={"email-address"}
-                        placeholder={""}
+                        placeholder={"E-mail"}
                         placeholderTextColor={GlobalStyles.colors.dark}
                         textAlign={'center'}
                         value={email}
@@ -94,7 +95,7 @@ function SingUpScreen({navigation}){
                 <TextInput 
                         style={styles.input}
                         keyboardType={"email-address"}
-                        placeholder={""}
+                        placeholder={"At least 6 digits "}
                         placeholderTextColor={GlobalStyles.colors.dark}
                         textAlign={'center'}
                         value={password}
@@ -113,8 +114,10 @@ function SingUpScreen({navigation}){
 export default SingUpScreen;
 
 const styles = StyleSheet.create({
-
-    mainContaineR:{
+    backButtonContainer:{
+        marginTop: 20,
+    },
+    mainContainer:{
         flex:1,
         alignItems: 'center',
         paddingTop: 15

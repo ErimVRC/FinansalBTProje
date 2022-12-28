@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 
 import { StyleSheet, View, Text, Image, TextInput, Alert, ScrollView } from "react-native";
 
-import { GlobalStyles } from "../components/constants/styles";
+import { GlobalStyles } from "../constants/styles";
 
 import { Octicons, Ionicons } from '@expo/vector-icons'; 
 
@@ -15,6 +15,8 @@ import { login } from "../util/request";
 import { AuthContext } from "../store/auth-context";
 
 import { LinearGradient } from "expo-linear-gradient";
+
+import { girisYap } from "../firebase/auth";
 
 
 function LoginScreen({navigation,route}){
@@ -49,8 +51,8 @@ function LoginScreen({navigation,route}){
     async function loginControl(){
         setGirisYaptiMi(true);
         try {
-            const idToken = await login(email,password);
-            authCtx.authenticate(idToken);
+            const uid = await girisYap(email,password);
+            authCtx.authenticate(uid.user.uid);
         } catch (error) {
             Alert.alert('Failed to logging please try again');
         }
@@ -84,7 +86,7 @@ function LoginScreen({navigation,route}){
                 <TextInput 
                         style={styles.input}
                         keyboardType={"email-address"}
-                        placeholder={""}
+                        placeholder={"E-mail"}
                         placeholderTextColor={GlobalStyles.colors.dark}
                         textAlign={'center'}
                         value={email}
@@ -97,7 +99,7 @@ function LoginScreen({navigation,route}){
                 <TextInput 
                         style={styles.input}
                         keyboardType={"email-address"}
-                        placeholder={""}
+                        placeholder={"Password"}
                         placeholderTextColor={GlobalStyles.colors.dark}
                         textAlign={'center'}
                         value={password}
@@ -122,9 +124,10 @@ export default LoginScreen;
 const styles = StyleSheet.create({
 
     mainContainer:{
+        
         flex:1,
         alignItems: 'center',
-        paddingTop: 15,
+        paddingTop: 50,
     },
     image:{
         height: 270,

@@ -12,6 +12,7 @@ import FindDeathsScreen from './screens/FindDeathsScreen';
 import EventsScreen from './screens/EventsScreen';
 import BirthsScreen from './screens/BirthsScreen';
 import DeathsScreen from './screens/DeathsScreen';
+import HistoryScreen from './screens/HistoryScreen';
 
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
@@ -19,10 +20,10 @@ import SignUpScreen from './screens/SignUpScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { GlobalStyles } from './components/constants/styles';
+import { GlobalStyles } from './constants/styles';
 
 import AuthContexProvider, { AuthContext } from './store/auth-context';
-import HistoryScreen from './screens/HistoryScreen';
+import UserSearchHistoryContexProvider from './store/user-search-history-context';
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -65,7 +66,7 @@ function BulEkranlari(){
     <BottomTabs.Screen 
       name="DogumlariGetirEkrani"
       component={FindBirthsScreen}
-      options={{title: 'Find Birthdays'}}
+      options={{title: 'Find Births'}}
     />
     <BottomTabs.Screen 
       name="OlumleriGetirEkrani"
@@ -133,7 +134,7 @@ function UygulamaEkranlari(){
 function Navigation() {
 
   const authContext = useContext(AuthContext);
-
+ 
   return (
     <NavigationContainer>
       {!authContext.isAuthenticated && <GirisKayitEkranlari />}
@@ -172,10 +173,12 @@ export default function App() {
 
   return (
     <AuthContexProvider>
-      <StatusBar
-        style='auto'
-      />
-      <Root />
+      <UserSearchHistoryContexProvider>
+        <StatusBar
+          style='auto'
+        />
+        <Root />
+      </UserSearchHistoryContexProvider>
     </AuthContexProvider>
   );
   

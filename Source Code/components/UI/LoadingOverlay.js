@@ -1,6 +1,6 @@
 import { StyleSheet , View , ActivityIndicator} from 'react-native';
 
-import { GlobalStyles } from '../constants/styles';
+import { GlobalStyles } from '../../constants/styles';
 
 
 function LoadingOverlay(){
